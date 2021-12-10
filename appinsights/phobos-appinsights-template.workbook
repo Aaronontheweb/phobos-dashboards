@@ -223,6 +223,7 @@
         "title": "Actor Metrics",
         "expandable": true,
         "expanded": true,
+        "loadType": "always",
         "items": [
           {
             "type": 3,
@@ -264,7 +265,21 @@
                 "durationMs": 86400000
               },
               "queryType": 0,
-              "resourceType": "microsoft.insights/components"
+              "resourceType": "microsoft.insights/components",
+              "gridSettings": {
+                "sortBy": [
+                  {
+                    "itemKey": "messagetype",
+                    "sortOrder": 2
+                  }
+                ]
+              },
+              "sortBy": [
+                {
+                  "itemKey": "messagetype",
+                  "sortOrder": 2
+                }
+              ]
             },
             "name": "msg_by_Type"
           },
@@ -302,10 +317,22 @@
         ]
       },
       "name": "actor_metrics"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "customMetrics\r\n| where timestamp > ago(5m) and name == \"akka.messages.latency\" and customDimensions[\"akka_address\"] in ({address}) and customDimensions[\"cluster_role\"] in ({role})\r\n| extend messagetype = tostring(customDimensions[\"messagetype\"])\r\n| extend actortype = tostring(customDimensions[\"actortype\"])\r\n| where not(isempty(messagetype)) and not(isempty(actortype))\r\n| summarize latency=(avg(value)/100) by actortype,messagetype\r\n| order by latency desc\r\n| limit 10",
+        "size": 0,
+        "title": "Akka.NET Message Processing Latencies by Type (Top 10, in milliseconds)",
+        "timeContext": {
+          "durationMs": 86400000
+        },
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components"
+      },
+      "name": "latencies"
     }
-  ],
-  "fallbackResourceIds": [
-    "/subscriptions/378b066e-1031-4f12-96a8-bedcdd480cd2/resourceGroups/phobos-dev/providers/microsoft.insights/components/phobos-test-appinsights"
   ],
   "$schema": "https://github.com/Microsoft/Application-Insights-Workbooks/blob/master/schema/workbook.json"
 }
