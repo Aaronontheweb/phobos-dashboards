@@ -418,7 +418,7 @@
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
       },
-      "description": "Status of all Akka.NET cluster members. Current up to the minute.",
+      "description": "Status of all Akka.NET applications in the current job / instance. Current up to the minute.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -449,14 +449,14 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
-        "w": 12,
+        "h": 11,
+        "w": 24,
         "x": 0,
         "y": 14
       },
-      "id": 152,
+      "id": 153,
       "options": {
-        "cellHeight": "sm",
+        "cellHeight": "lg",
         "footer": {
           "countRows": false,
           "fields": "",
@@ -465,8 +465,14 @@
           ],
           "show": false
         },
-        "frameIndex": 0,
-        "showHeader": true
+        "frameIndex": 1,
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "status"
+          }
+        ]
       },
       "pluginVersion": "11.0.0",
       "targets": [
@@ -478,28 +484,120 @@
           "disableTextWrap": false,
           "editorMode": "code",
           "exemplar": false,
-          "expr": "max by (instance,akka_address, cluster_role, service_version, status) (\n  max_over_time(akka_cluster_members{job=~\"$job\",instance=~\"$instance\",status=~\"(Up|WeaklyUp|Joining|Leaving|Exiting)\"}[1m])\n) > 0",
+          "expr": "max by (instance,akka_address, cluster_role, service_version, status) (\n  max_over_time(akka_cluster_members{job=~\"$job\",instance=~\"$instance\",status=~\"(Up|WeaklyUp|Joining|Leaving|Exiting)\"}[5m])\n) > 0",
           "format": "table",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "instant": true,
-          "legendFormat": "__auto",
+          "legendFormat": "{{instance}}",
           "range": false,
           "refId": "A",
           "useBackend": false
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "(\r\n  sum by (instance) (\r\n    akka_actor_live_actors{job=~\"$job\", instance=~\"$instance\"}\r\n  )\r\n  and on (instance)\r\n  max by (instance) (\r\n    max_over_time(akka_cluster_members{job=~\"$job\", instance=~\"$instance\", status=~\"(Up|WeaklyUp|Joining|Leaving|Exiting)\"}[1m])\r\n  )\r\n)\r\nor on (instance)\r\n(\r\n  0 * max by (instance) (\r\n    max_over_time(akka_cluster_members{job=~\"$job\", instance=~\"$instance\", status=~\"(Up|WeaklyUp|Joining|Leaving|Exiting)\"}[1m])\r\n  )\r\n)\r\n",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "{{instance}}",
+          "range": true,
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "(\r\n  sum by (instance) (\r\n    rate(akka_messages_recv_msgs_total{job=~\"$job\", instance=~\"$instance\"}[$__range])\r\n  )\r\n  and on (instance)\r\n  max by (instance) (\r\n    max_over_time(akka_cluster_members{job=~\"$job\", instance=~\"$instance\", status=~\"(Up|WeaklyUp|Joining|Leaving|Exiting)\"}[1m])\r\n  )\r\n)\r\nor on (instance)\r\n(\r\n  0 * max by (instance) (\r\n    max_over_time(akka_cluster_members{job=~\"$job\", instance=~\"$instance\", status=~\"(Up|WeaklyUp|Joining|Leaving|Exiting)\"}[1m])\r\n  )\r\n)",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "{{instance}}",
+          "range": true,
+          "refId": "C"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "(\r\n  sum by (instance) (\r\n    rate(akka_logs_events_total{job=~\"$job\", instance=~\"$instance\"}[$__range])\r\n  )\r\n  and on (instance)\r\n  max by (instance) (\r\n    max_over_time(akka_cluster_members{job=~\"$job\", instance=~\"$instance\", status=~\"(Up|WeaklyUp|Joining|Leaving|Exiting)\"}[1m])\r\n  )\r\n)\r\nor on (instance)\r\n(\r\n  0 * max by (instance) (\r\n    max_over_time(akka_cluster_members{job=~\"$job\", instance=~\"$instance\", status=~\"(Up|WeaklyUp|Joining|Leaving|Exiting)\"}[1m])\r\n  )\r\n)\r\n",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "{{instance}}",
+          "range": true,
+          "refId": "D"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "(\r\n  sum by (instance) (\r\n    rate(akka_logs_events_total{level=\"error\", job=~\"$job\", instance=~\"$instance\"}[$__range])\r\n  )\r\n  and on (instance)\r\n  max by (instance) (\r\n    max_over_time(akka_cluster_members{job=~\"$job\", instance=~\"$instance\", status=~\"(Up|WeaklyUp|Joining|Leaving|Exiting)\"}[1m])\r\n  )\r\n)\r\nor on (instance)\r\n(\r\n  0 * max by (instance) (\r\n    max_over_time(akka_cluster_members{job=~\"$job\", instance=~\"$instance\", status=~\"(Up|WeaklyUp|Joining|Leaving|Exiting)\"}[1m])\r\n  )\r\n)\r\n",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "{{instance}}",
+          "range": true,
+          "refId": "E"
         }
       ],
-      "title": "Cluster Members",
+      "title": "Akka.NET Instances",
       "transformations": [
         {
-          "id": "filterFieldsByName",
+          "filter": {
+            "id": "byRefId",
+            "options": ""
+          },
+          "id": "timeSeriesTable",
           "options": {
-            "include": {
-              "names": [
-                "akka_address",
-                "instance",
-                "status"
-              ]
+            "A": {
+              "stat": "lastNotNull"
+            },
+            "B": {
+              "stat": "last",
+              "timeField": "Time"
+            },
+            "C": {
+              "stat": "last",
+              "timeField": "Time"
+            },
+            "D": {
+              "stat": "last",
+              "timeField": "Time"
+            },
+            "E": {
+              "stat": "last",
+              "timeField": "Time"
+            }
+          }
+        },
+        {
+          "id": "joinByField",
+          "options": {
+            "byField": "instance",
+            "mode": "outer"
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "Value": true
+            },
+            "includeByName": {},
+            "indexByName": {},
+            "renameByName": {
+              "Trend #B": "Actors",
+              "Trend #C": "Msg / s",
+              "Trend #D": "Logs / s",
+              "Trend #E": "Errors / s"
             }
           }
         }
@@ -516,7 +614,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 22
+        "y": 25
       },
       "id": 8,
       "panels": [],
@@ -666,7 +764,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 23
+        "y": 26
       },
       "id": 6,
       "options": {
@@ -762,7 +860,7 @@
         "h": 9,
         "w": 12,
         "x": 0,
-        "y": 31
+        "y": 34
       },
       "id": 10,
       "options": {
@@ -852,7 +950,7 @@
         "h": 9,
         "w": 12,
         "x": 12,
-        "y": 31
+        "y": 34
       },
       "id": 12,
       "maxDataPoints": 100,
@@ -904,7 +1002,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 40
+        "y": 43
       },
       "id": 2,
       "panels": [],
@@ -984,7 +1082,7 @@
         "h": 7,
         "w": 24,
         "x": 0,
-        "y": 41
+        "y": 44
       },
       "id": 151,
       "options": {
@@ -1108,7 +1206,7 @@
         "h": 9,
         "w": 12,
         "x": 0,
-        "y": 48
+        "y": 51
       },
       "id": 4,
       "options": {
@@ -1186,7 +1284,7 @@
         "h": 9,
         "w": 12,
         "x": 12,
-        "y": 48
+        "y": 51
       },
       "id": 16,
       "maxDataPoints": 100,
@@ -1268,7 +1366,7 @@
         "h": 9,
         "w": 12,
         "x": 0,
-        "y": 57
+        "y": 60
       },
       "id": 14,
       "options": {
@@ -1373,7 +1471,7 @@
         "h": 9,
         "w": 12,
         "x": 12,
-        "y": 57
+        "y": 60
       },
       "id": 20,
       "options": {
@@ -1438,7 +1536,7 @@
         "h": 9,
         "w": 12,
         "x": 0,
-        "y": 66
+        "y": 69
       },
       "id": 18,
       "options": {
@@ -1524,7 +1622,7 @@
         "h": 9,
         "w": 12,
         "x": 12,
-        "y": 66
+        "y": 69
       },
       "id": 21,
       "options": {
@@ -1577,7 +1675,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 75
+        "y": 78
       },
       "id": 38,
       "panels": [],
@@ -1626,7 +1724,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 76
+        "y": 79
       },
       "id": 56,
       "options": {
@@ -1700,7 +1798,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 76
+        "y": 79
       },
       "id": 57,
       "options": {
@@ -1844,7 +1942,7 @@
     ]
   },
   "time": {
-    "from": "now-5m",
+    "from": "now-1h",
     "to": "now"
   },
   "timeRangeUpdatedDuringEditOrView": false,
@@ -1876,6 +1974,6 @@
   "timezone": "",
   "title": "Akka.NET Cluster + Phobos Metrics",
   "uid": "fm-cB0241",
-  "version": 28,
+  "version": 30,
   "weekStart": ""
 }
